@@ -8,22 +8,28 @@
             D3     D4     Gnd
 */
 
+byte pins[5] = {0, 2, 4, 1, 3};
+
+
 void setup() {
   
   //Using this loop is 30 bytes worse than unfolding it
   for (int f = 0; f < 5; f++) {
-    pinMode(f, OUTPUT);
+    pinMode(pins[f], OUTPUT);
   }
 }
+
 
 void loop() {
 
   //Using this loop is 84 bytes worse than unfolding it
   for (int f = 0; f < 5; f++) {
-    digitalWrite(f, HIGH);
-    delay(5);
-    digitalWrite(f, LOW);
-    delay(495);
+    digitalWrite(pins[f], HIGH);
+    delay(15);
+    digitalWrite(pins[f], LOW);
+    delay(85);
   }
+
+  delay(1500);
 
 }
