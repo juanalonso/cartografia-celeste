@@ -3,7 +3,7 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = false;
+boolean debug = true;
 
 
 //Panel-related dimensions
@@ -32,7 +32,7 @@ void setup() {
   noFill();
   pixelDensity(2);
 
-  randomSeed(5);
+  randomSeed(3);
 
   placeStars();
   placeLines();
@@ -84,19 +84,7 @@ void draw() {
     float endX = starfield[toStar][0];
     float endY = starfield[toStar][1];
 
-    if (remove[f]) {
-      if (debug) {
-        stroke(0, 40);
-      } else {
-        continue;
-      }
-    }
-
     line( startX + 2*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, endX + 2*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
-
-    if (remove[f]) {
-      stroke(0);
-    }
   }
 
   noLoop();
@@ -126,15 +114,26 @@ void placeStars() {
 
 void  placeLines() {
 
-  Delaunay myDelaunay = new Delaunay(starfield);
-  lines = myDelaunay.getLinks();
+  //Calculate Delaunay triangulation
+  Delaunay delaunay = new Delaunay(starfield);
+  lines = delaunay.getLinks();
+
+  //lines include some (0,0) tuples at the end of it. We can remove them
+  for (int g=0; g<lines.length; g++) {
+    if (lines[g][0]==0 && lines[g][1]==0) {
+      lines = Arrays.copyOf(lines, g);
+      break;
+    }
+  }
   remove = new boolean[lines.length];
 
+
+  //Calculate convex hull
   Hull hull = new Hull(starfield);
   int[] extrema = hull.getExtrema();
 
 
-
+  //Remove convex hull from triangulation
   for (int f=0; f<extrema.length; f++) {
 
     int fromStar = extrema[f];
@@ -145,6 +144,52 @@ void  placeLines() {
         lines[g][0]==toStar && lines[g][1]==fromStar) {
         remove[g] = true;
       }
+    }
+  }
+
+
+  //Remove some triangles
+  ArrayList[] graph = new ArrayList[starNum];
+  for (int f=0; f<starNum; f++) {
+    graph[f] = new ArrayList();
+  }
+  for (int f=0; f<lines.length; f++) {
+    if (!remove[f]) {
+      graph[lines[f][0]].add(lines[f][1]);
+      graph[lines[f][1]].add(lines[f][0]);
+    }
+  }
+  for (int f=0; f<starNum; f++) {
+    if (graph[f].size()>=2) {
+      int star1 = (int)graph[f].get(0);
+      int star2 = (int)graph[f].get(1);
+      int position = graph[star1].indexOf(star2);
+      if (position>=0) {
+        println("triangle ", f, "-", star1, "-", star2, "found");
+        int[] vertices = {f, star1, star2};
+        int v1 = (int)random(3);
+        int v2 = (v1+1)%3;
+        graph[vertices[v1]].remove((Integer)vertices[v2]);        
+        graph[vertices[v2]].remove((Integer)vertices[v1]);
+      }
+    }
+  }
+  int totalLines = 0;
+  for (int f=0; f<starNum; f++) {
+    for (int g=f; g>=0; g--) {
+      graph[f].remove((Integer)g);
+    }
+    totalLines += graph[f].size();
+  }
+  println("-----------");
+  lines = new int[totalLines][2];
+
+  int count = 0;
+  for (int f=0; f<starNum; f++) {
+    for (int g=0; g<graph[f].size();g++) {
+      lines[count][0] = f;
+      lines[count][1] = (int)graph[f].get(g);
+      count++;
     }
   }
 }
