@@ -9,10 +9,10 @@ class Line {
   }
 
   boolean intersects(Line l) {
-    PVector v1 = starField[fromStar];
-    PVector v2 = starField[toStar];
-    PVector v3 = starField[l.fromStar];
-    PVector v4 = starField[l.toStar];
+    PVector v1 = new PVector(starfield[fromStar][0], starfield[fromStar][1]);
+    PVector v2 = new PVector(starfield[toStar][0], starfield[toStar][1]);
+    PVector v3 = new PVector(starfield[l.fromStar][0], starfield[l.fromStar][1]);
+    PVector v4 = new PVector(starfield[l.toStar][0], starfield[l.toStar][1]);
 
     float uA = ((v4.x-v3.x)*(v1.y-v3.y) - (v4.y-v3.y)*(v1.x-v3.x)) / ((v4.y-v3.y)*(v2.x-v1.x) - (v4.x-v3.x)*(v2.y-v1.y));
     float uB = ((v2.x-v1.x)*(v1.y-v3.y) - (v2.y-v1.y)*(v1.x-v3.x)) / ((v4.y-v3.y)*(v2.x-v1.x) - (v4.x-v3.x)*(v2.y-v1.y));
@@ -25,8 +25,8 @@ class Line {
   }
   
   PVector toPVector(){
-    PVector v1 = starField[fromStar];
-    PVector v2 = starField[toStar];
+    PVector v1 = new PVector(starfield[fromStar][0], starfield[fromStar][1]);
+    PVector v2 = new PVector(starfield[toStar][0], starfield[toStar][1]);
     return PVector.sub(v2, v1);
   }
 }
