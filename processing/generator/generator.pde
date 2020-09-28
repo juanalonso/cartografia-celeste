@@ -111,7 +111,7 @@ void placeStars() {
     while (relocate) {
       relocate = false;
       starfield[f][0] = random(panelW-2*panelPadding);
-      starfield[f][1] = random(panelW-panelPadding);
+      starfield[f][1] = random(panelW-2*panelPadding);
       for (int g=0; g<f; g++) {
         if (starDist(starfield[f], starfield[g])<starMargin) {
           relocate = true;
