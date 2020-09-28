@@ -3,7 +3,9 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = true;
+boolean debug = false;
+boolean record = true;
+boolean twoPanels = true;
 
 
 //Panel-related dimensions
@@ -13,6 +15,11 @@ int panelMargin = 10;
 int panelPadding = 40;
 int holeDiam = 9;
 int deltaPanel = panelMargin+panelPadding;
+
+
+//Laser-cutter related values
+float strokeRaster = 1;
+float strokeCut = 0.01;
 
 
 //Star-related dimensions
@@ -30,14 +37,12 @@ void setup() {
   size(1200, 635);
   rectMode(CORNER);
   noFill();
-  pixelDensity(2);
 
-  randomSeed(3);
+  randomSeed(4);
 
   placeStars();
   placeLines();
 
-  //beginRecord(SVG, "filename.svg");
 }
 
 
@@ -45,10 +50,15 @@ void setup() {
 void draw() {
 
   background(255);
-  strokeWeight(debug ? 1: 0.001);
+
+  if (record) {
+    beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+".svg");
+  }
+
+  strokeWeight(debug ? strokeRaster: strokeCut);
   noFill();
 
-  for (int f=0; f<3; f++) {
+  for (int f=0; f<(twoPanels?2:3); f++) {
     rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
   }
 
@@ -62,19 +72,18 @@ void draw() {
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel, 
       starDiam, starDiam);
 
-
-    ellipse(starfield[f][0] + 2*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel, 
+    ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel, 
       holeDiam+deltaRad, holeDiam+deltaRad);
 
     fill(0);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel+ starDiam/2 + 3, starfield[f][1]+deltaPanel);
+    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel+ starDiam/2 + 4, starfield[f][1]+deltaPanel+4);
     if (debug) {
-      text(f, starfield[f][0] + starDiam/2 + 3+ 2*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel);
+      text(f, starfield[f][0] + starDiam/2 + 3+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel);
     }
     noFill();
   }
 
-  strokeWeight(1);
+  strokeWeight(strokeRaster);
   for (int f=0; f<lines.length; f++) {
 
     int fromStar = lines[f][0];
@@ -84,12 +93,14 @@ void draw() {
     float endX = starfield[toStar][0];
     float endY = starfield[toStar][1];
 
-    line( startX + 2*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, endX + 2*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
+    line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, 
+      endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
   }
 
   noLoop();
-
-  //endRecord();
+  if (record) {
+    endRecord();
+  }
 }
 
 
@@ -186,7 +197,7 @@ void  placeLines() {
 
   int count = 0;
   for (int f=0; f<starNum; f++) {
-    for (int g=0; g<graph[f].size();g++) {
+    for (int g=0; g<graph[f].size(); g++) {
       lines[count][0] = f;
       lines[count][1] = (int)graph[f].get(g);
       count++;
