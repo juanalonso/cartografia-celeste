@@ -4,7 +4,7 @@ import java.util.*;
 
 
 boolean debug = false;
-boolean record = true;
+boolean record = false;
 boolean twoPanels = true;
 
 
@@ -13,18 +13,18 @@ int panelW = 380;
 int panelH = int(panelW * 1.618);
 int panelMargin = 10;
 int panelPadding = 40;
-int holeDiam = 9;
+//int holeDiam = 9;
 int deltaPanel = panelMargin+panelPadding;
 
 
 //Laser-cutter related values
-float strokeRaster = 1;
+float strokeRaster = 2;
 float strokeCut = 0.01;
 
 
 //Star-related dimensions
 int starNum = 12;
-int starDiam = 13;
+int ledDiam = 13;
 int starMargin = 50;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
@@ -37,12 +37,12 @@ void setup() {
   size(1200, 635);
   rectMode(CORNER);
   noFill();
+  textSize(14); 
 
-  randomSeed(4);
+  randomSeed(5);
 
   placeStars();
   placeLines();
-
 }
 
 
@@ -64,21 +64,21 @@ void draw() {
 
   for (int f=0; f<starNum; f++) {
 
-    float deltaRad = random(starDiam - holeDiam -1);
+    float holeDiam = random(6, ledDiam-1);
 
     //ellipse(starfield[f][0]+deltaPanel, starfield[f][1]+deltaPanel, 
-    //  starDiam, starDiam);
+    //  ledDiam, ledDiam);
 
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel, 
-      starDiam, starDiam);
+      ledDiam, ledDiam);
 
     ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel, 
-      holeDiam+deltaRad, holeDiam+deltaRad);
+      holeDiam, holeDiam);
 
     fill(0);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel+ starDiam/2 + 4, starfield[f][1]+deltaPanel+4);
+    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel+ ledDiam/2 + 7, starfield[f][1]+deltaPanel+5);
     if (debug) {
-      text(f, starfield[f][0] + starDiam/2 + 3+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel);
+      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel + 5);
     }
     noFill();
   }
@@ -96,6 +96,16 @@ void draw() {
     line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, 
       endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
   }
+
+  textSize(24);
+  text("Constellation name", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
+  textSize(14); 
+  text("03h 00m 00s, +20º 00' 00''", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
+  text("Distance: 12pc", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
+  text("Main stars: 12", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
+  text("Brightest star: α And "+nf(random(-0.5,6.5),1,2)+"m", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
+  text("Discovered by xxxxxxxxxx (1876)", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
+
 
   noLoop();
   if (record) {
