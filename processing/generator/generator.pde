@@ -42,7 +42,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(5);
+  randomSeed(6);
 
   placeStars();
   placeLines();
@@ -157,11 +157,11 @@ void placeStars() {
       starfield[f][0] = random(panelW-2*panelPadding);
       starfield[f][1] = random(panelW-2*panelPadding);
       float sx = starfield[f][0] + deltaPanel;
-      if (sx>=getTraceX(1)-ledDiam/2 && sx<=getTraceX(1)+traceW+ledDiam/2) {
+      if (sx>=getTraceX(1)-ledDiam/2-1 && sx<=getTraceX(1)+traceW+ledDiam/2+1) {
         relocate = true;
         continue;
       }
-      if (sx>=getTraceX(2)-ledDiam/2 && sx<=getTraceX(2)+traceW+ledDiam/2) {
+      if (sx>=getTraceX(2)-ledDiam/2-1 && sx<=getTraceX(2)+traceW+ledDiam/2+1) {
         relocate = true;
         continue;
       }
@@ -212,7 +212,7 @@ void  placeLines() {
   }
 
 
-  //Remove some triangles
+  //Remove most of the triangles
   ArrayList[] graph = new ArrayList[starNum];
   for (int f=0; f<starNum; f++) {
     graph[f] = new ArrayList();
@@ -224,12 +224,13 @@ void  placeLines() {
     }
   }
   for (int f=0; f<starNum; f++) {
-    if (graph[f].size()>=2) {
-      int star1 = (int)graph[f].get(0);
-      int star2 = (int)graph[f].get(1);
+    //This is ugly but oh so convenient...
+    for (int g = 0; g<10 && graph[f].size()>=2; g++) {
+      int star1 = (int)graph[f].get(g % graph[f].size());
+      int star2 = (int)graph[f].get((g+1) % graph[f].size());
       int position = graph[star1].indexOf(star2);
       if (position>=0) {
-        println("triangle ", f, "-", star1, "-", star2, "found");
+        println("pass " + g + "      triangle ", f, "-", star1, "-", star2);
         int[] vertices = {f, star1, star2};
         int v1 = (int)random(3);
         int v2 = (v1+1)%3;
