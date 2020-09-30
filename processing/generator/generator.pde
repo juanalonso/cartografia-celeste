@@ -21,7 +21,7 @@ float strokeRaster = 2;
 float strokeCut = 0.01;
 
 
-//Star-related dimensions
+//Star-related values
 int starNum = 12;
 int ledDiam = 13;
 int starMargin = 50;
@@ -29,6 +29,8 @@ int unconnectedStars;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
 boolean[] remove;
+String[] names;
+String[] starData = new String[6];
 
 
 //Electronics
@@ -45,8 +47,11 @@ void setup() {
 
   randomSeed(10);
 
+  names = loadStrings("data/latin_nouns.txt");
+
   placeStars();
   placeLines();
+  generateText();
 }
 
 
@@ -133,13 +138,13 @@ void draw() {
 
   //Text (raster)
   textSize(24);
-  text("Constellation name", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
+  text(starData[0], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
   textSize(14); 
-  text("03h 00m 00s, +20º 00' 00''", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
-  text("Distance: 12pc", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
-  text("Main stars: " + (starNum-unconnectedStars), (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
-  text("Brightest star: α And "+nf(random(-0.5, 6.5), 1, 2)+"m", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
-  text("Discovered by xxxxxxxxxx (1876)", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
+  text(starData[1], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
+  text(starData[2], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
+  text(starData[3], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
+  text(starData[4], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
+  text(starData[5], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
 
 
   noLoop();
@@ -173,6 +178,24 @@ void placeStars() {
       }
     }
   }
+}
+
+
+
+
+void generateText() {
+  starData[0] = names[(int)random(names.length)];
+  starData[0] = starData[0].substring(0, 1).toUpperCase() + starData[0].substring(1);
+
+  starData[1] = "03h 00m 00s, +20º 00' 00''";
+
+  starData[2] = "Distance: 12pc";
+
+  starData[3] = "Main stars: " + (starNum-unconnectedStars);
+
+  starData[4] = "Brightest star: α " + starData[0].substring(0, 3) +" "+ nf(random(-0.5, 6.5), 1, 2)+"m";
+
+  starData[5] = "Discovered by xxxxxxxxxx (1876)";
 }
 
 
@@ -243,7 +266,7 @@ void  placeLines() {
   }
 
 
-  //If a star has more than 4 connections we prune them to four
+  //If a star has more than 3 connections we prune them to three
   for (int f=0; f<starNum; f++) {
     while (graph[f].size()>3) {
       int v1 = (int)random(graph[f].size());
@@ -253,8 +276,8 @@ void  placeLines() {
       graph[star1].remove((Integer)f);
     }
   }
-  
-  
+
+
   //Update the number of unconnected stars
   unconnectedStars=0;
   for (int f=0; f<starNum; f++) {
@@ -262,7 +285,7 @@ void  placeLines() {
       unconnectedStars++;
     }
   }
- 
+
 
 
   //Trim the graph...
@@ -293,6 +316,7 @@ void keyPressed() {
   if (key==' ') {
     placeStars();
     placeLines();
+    generateText();
     loop();
   }
 }
