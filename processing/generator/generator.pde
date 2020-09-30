@@ -25,6 +25,7 @@ float strokeCut = 0.01;
 int starNum = 12;
 int ledDiam = 13;
 int starMargin = 50;
+int unconnectedStars;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
 boolean[] remove;
@@ -42,7 +43,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(6);
+  randomSeed(10);
 
   placeStars();
   placeLines();
@@ -136,7 +137,7 @@ void draw() {
   textSize(14); 
   text("03h 00m 00s, +20º 00' 00''", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
   text("Distance: 12pc", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
-  text("Main stars: 12", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
+  text("Main stars: " + (starNum-unconnectedStars), (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
   text("Brightest star: α And "+nf(random(-0.5, 6.5), 1, 2)+"m", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
   text("Discovered by xxxxxxxxxx (1876)", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
 
@@ -181,6 +182,7 @@ void  placeLines() {
   //Calculate Delaunay triangulation
   Delaunay delaunay = new Delaunay(starfield);
   lines = delaunay.getLinks();
+
 
   //lines include some (0,0) tuples at the end of it. We can remove them
   for (int g=0; g<lines.length; g++) {
@@ -243,7 +245,7 @@ void  placeLines() {
 
   //If a star has more than 4 connections we prune them to four
   for (int f=0; f<starNum; f++) {
-    while (graph[f].size()>4) {
+    while (graph[f].size()>3) {
       int v1 = (int)random(graph[f].size());
       int star1 = (int) graph[f].get(v1);
       println("Deleting line between", f, "and", star1);
@@ -251,7 +253,19 @@ void  placeLines() {
       graph[star1].remove((Integer)f);
     }
   }
+  
+  
+  //Update the number of unconnected stars
+  unconnectedStars=0;
+  for (int f=0; f<starNum; f++) {
+    if (graph[f].size()==0) {
+      unconnectedStars++;
+    }
+  }
+ 
 
+
+  //Trim the graph...
   int totalLines = 0;
   for (int f=0; f<starNum; f++) {
     for (int g=f; g>=0; g--) {
@@ -260,10 +274,10 @@ void  placeLines() {
     totalLines += graph[f].size();
   }
   println("-----------");
+
+
+  //... and transform it into an array
   lines = new int[totalLines][2];
-
-
-
   int count = 0;
   for (int f=0; f<starNum; f++) {
     for (int g=0; g<graph[f].size(); g++) {
