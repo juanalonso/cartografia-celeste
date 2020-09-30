@@ -4,7 +4,7 @@ import java.util.*;
 
 
 boolean debug = true;
-boolean record = false;
+boolean record = true;
 boolean twoPanels = true;
 
 
@@ -45,7 +45,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(10);
+  randomSeed(12);
 
   names = loadStrings("data/latin_nouns.txt");
 
@@ -84,11 +84,24 @@ void draw() {
       getTraceX(f) + traceW/2, height - panelMargin-panelPadding/2-traceW);
   }
   if (debug) {
-    stroke(200, 100, 200);
-    rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
+    stroke(200, 100, 200, 50);
+    //rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
     for (int f=0; f<4; f++) {
       rect (getTraceX(f), panelMargin+panelPadding/2, 
         traceW, panelH-panelMargin*2-panelPadding/2);
+    }
+    stroke(0);
+  }
+
+
+
+  //Blocks (debug)
+  if (debug) {
+    strokeWeight(1);
+    stroke(200, 200, 100);
+    for (int f=0; f<=4; f++) {
+      float y = getBlockY(f);
+      line(getTraceX(0)+traceW/2, y, getTraceX(3)+traceW/2, y);
     }
     stroke(0);
   }
@@ -99,9 +112,9 @@ void draw() {
   strokeWeight(debug ? 1: strokeCut);
   for (int f=0; f<starNum; f++) {
     float holeDiam = random(6, ledDiam-1);
-    ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel, 
+    ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1], 
       ledDiam, ledDiam);
-    ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel, 
+    ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1], 
       holeDiam, holeDiam);
   }
 
@@ -111,10 +124,10 @@ void draw() {
   fill(0);
   for (int f=0; f<starNum; f++) {
     textAlign(CENTER);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel+ ledDiam*1.75);
+    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+ ledDiam*1.75);
     textAlign(LEFT);
     if (debug) {
-      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel + 5);
+      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1] + 5);
     }
   }
   noFill();
@@ -130,8 +143,8 @@ void draw() {
     float startY = starfield[fromStar][1];
     float endX = starfield[toStar][0];
     float endY = starfield[toStar][1];
-    line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, 
-      endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
+    line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY, 
+      endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY);
   }
 
 
@@ -156,12 +169,16 @@ void draw() {
 
 
 void placeStars() {
+  
+  float blockHeight = getBlockY(1) - getBlockY(0) ;
+  
   for (int f=0; f<starNum; f++) {
     boolean relocate = true;
     while (relocate) {
       relocate = false;
+
+      //X coordinate. Do not place on copper trace.
       starfield[f][0] = random(panelW-2*panelPadding);
-      starfield[f][1] = random(panelW-2*panelPadding);
       float sx = starfield[f][0] + deltaPanel;
       if (sx>=getTraceX(1)-ledDiam/2-1 && sx<=getTraceX(1)+traceW+ledDiam/2+1) {
         relocate = true;
@@ -171,9 +188,35 @@ void placeStars() {
         relocate = true;
         continue;
       }
+
+      //Y coordinate. Asign to the corresponding block
+      int block = 0;
+      switch(f) {
+      case 0:
+      case 1: 
+        block = 1; 
+        break;
+      case 2:
+      case 3: 
+      case 4:
+      case 5: 
+        block = 2; 
+        break;
+      case 6:
+      case 7: 
+      case 8:
+      case 9: 
+        block = 3; 
+        break;
+      default:
+        block = 4;
+      }
+      //starfield[f][1] = random(panelW-2*panelPadding);
+      starfield[f][1] = random(getBlockY(block-1)+ledDiam/2+1, getBlockY(block)-ledDiam/2-1);
       for (int g=0; g<f; g++) {
         if (starDist(starfield[f], starfield[g])<starMargin) {
           relocate = true;
+          continue;
         }
       }
     }
@@ -184,18 +227,26 @@ void placeStars() {
 
 
 void generateText() {
+
+  //Name
   starData[0] = names[(int)random(names.length)];
   starData[0] = starData[0].substring(0, 1).toUpperCase() + starData[0].substring(1);
 
-  starData[1] = "03h 00m 00s, +20º 00' 00''";
+  //Coordinates
+  starData[1] = nf((int)random(24), 2) + "h "+nf((int)random(60), 2) +"m "+nf((int)random(60), 2) +"s," +
+    " "+nfp((int)random(24)-12, 2)+"º "+nf((int)random(60), 2) +"' "+nf((int)random(60), 2) +"\"";
 
-  starData[2] = "Distance: 12pc";
+  //Distance
+  starData[2] = "Distance: "+nf(random(1.3, 100), 1, 2)+"pc";
 
+  //Number of stars
   starData[3] = "Main stars: " + (starNum-unconnectedStars);
 
-  starData[4] = "Brightest star: α " + starData[0].substring(0, 3) +" "+ nf(random(-0.5, 6.5), 1, 2)+"m";
+  //Brightest star
+  String[] brightnessLevels = {"α", "α", "α", "β", "β", "γ", "δ", "ε"};
+  starData[4] = "Brightest star: "+brightnessLevels[(int)random(brightnessLevels.length)]+" " + starData[0].substring(0, 3) +" "+ nf(random(-0.5, 6.5), 1, 2)+"m";
 
-  starData[5] = "Discovered by xxxxxxxxxx (1876)";
+  starData[5] = "Catalogued in "+(int)random(1600, 1825)+" by "+char((int)random(65, 91))+". Xxxxxxxxx";
 }
 
 
@@ -331,4 +382,8 @@ float starDist(float[] s1, float[] s2) {
 
 float getTraceX(int index) {
   return map(index, 0, 3, panelMargin+panelPadding/2, panelW+panelMargin-panelPadding/2) - traceW/2;
+}
+
+float getBlockY(int index) {
+  return map(index, 0, 4, deltaPanel, panelW+panelMargin-panelPadding);
 }
