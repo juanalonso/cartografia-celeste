@@ -69,7 +69,7 @@ void draw() {
     stroke(200, 100, 200);
     rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
     for (int f=0; f<4; f++) {
-      rect (panelMargin+panelPadding/2-traceW/2 + f*113.5, panelMargin+panelPadding/2, 
+      rect (getTraceX(f), panelMargin+panelPadding/2, 
         traceW, panelH-panelMargin*2-panelPadding/2);
     }
     stroke(0);
@@ -79,9 +79,6 @@ void draw() {
 
     float holeDiam = random(6, ledDiam-1);
 
-    //ellipse(starfield[f][0]+deltaPanel, starfield[f][1]+deltaPanel, 
-    //  ledDiam, ledDiam);
-
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel, 
       ledDiam, ledDiam);
 
@@ -89,8 +86,10 @@ void draw() {
       holeDiam, holeDiam);
 
     fill(0);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel+ ledDiam/2 + 7, starfield[f][1]+deltaPanel+5);
+    textAlign(CENTER);
+    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel+ ledDiam*1.75);
     if (debug) {
+      textAlign(LEFT);
       text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel + 5);
     }
     noFill();
@@ -135,6 +134,15 @@ void placeStars() {
       relocate = false;
       starfield[f][0] = random(panelW-2*panelPadding);
       starfield[f][1] = random(panelW-2*panelPadding);
+      float sx = starfield[f][0] + deltaPanel;
+      if (sx>=getTraceX(1)-ledDiam/2 && sx<=getTraceX(1)+traceW+ledDiam/2) {
+        relocate = true;
+        continue;
+      }
+      if (sx>=getTraceX(2)-ledDiam/2 && sx<=getTraceX(2)+traceW+ledDiam/2) {
+        relocate = true;
+        continue;
+      }
       for (int g=0; g<f; g++) {
         if (starDist(starfield[f], starfield[g])<starMargin) {
           relocate = true;
@@ -242,4 +250,9 @@ float starDist(float[] s1, float[] s2) {
   PVector v1 = new PVector(s1[0], s1[1]);
   PVector v2 = new PVector(s2[0], s2[1]);
   return PVector.dist(v1, v2);
+}
+
+
+float getTraceX(int index) {
+  return map(index, 0, 3, panelMargin+panelPadding/2, panelW+panelMargin-panelPadding/2) - traceW/2;
 }
