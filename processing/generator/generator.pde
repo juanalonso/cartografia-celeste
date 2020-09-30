@@ -3,7 +3,7 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = false;
+boolean debug = true;
 boolean record = false;
 boolean twoPanels = true;
 
@@ -13,7 +13,6 @@ int panelW = 380;
 int panelH = int(panelW * 1.618);
 int panelMargin = 10;
 int panelPadding = 40;
-//int holeDiam = 9;
 int deltaPanel = panelMargin+panelPadding;
 
 
@@ -29,6 +28,10 @@ int starMargin = 50;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
 boolean[] remove;
+
+
+//Electronics
+float traceW = 5*ledDiam/3;
 
 
 
@@ -55,11 +58,21 @@ void draw() {
     beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+".svg");
   }
 
-  strokeWeight(debug ? strokeRaster: strokeCut);
+  strokeWeight(debug ? 1: strokeCut);
   noFill();
 
   for (int f=0; f<(twoPanels?2:3); f++) {
     rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
+  }
+
+  if (debug) {
+    stroke(200, 100, 200);
+    rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
+    for (int f=0; f<4; f++) {
+      rect (panelMargin+panelPadding/2-traceW/2 + f*113.5, panelMargin+panelPadding/2, 
+        traceW, panelH-panelMargin*2-panelPadding/2);
+    }
+    stroke(0);
   }
 
   for (int f=0; f<starNum; f++) {
@@ -103,7 +116,7 @@ void draw() {
   text("03h 00m 00s, +20º 00' 00''", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
   text("Distance: 12pc", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
   text("Main stars: 12", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
-  text("Brightest star: α And "+nf(random(-0.5,6.5),1,2)+"m", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
+  text("Brightest star: α And "+nf(random(-0.5, 6.5), 1, 2)+"m", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
   text("Discovered by xxxxxxxxxx (1876)", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
 
 
