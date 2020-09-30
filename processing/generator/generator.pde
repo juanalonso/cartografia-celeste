@@ -58,13 +58,25 @@ void draw() {
     beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+".svg");
   }
 
-  strokeWeight(debug ? 1: strokeCut);
-  noFill();
 
+
+  //Panels (cut)
+  strokeWeight(debug ? 1: strokeCut);
+  noFill();  
   for (int f=0; f<(twoPanels?2:3); f++) {
     rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
   }
 
+
+
+  //Trace guides (raster)
+  strokeWeight(strokeRaster);
+  for (int f=0; f<4; f++) {
+    line (getTraceX(f) + traceW/2, panelMargin+panelPadding/2, 
+      getTraceX(f) + traceW/2, panelMargin+panelPadding/2 + traceW);
+    line (getTraceX(f) + traceW/2, height - panelMargin-panelPadding/2, 
+      getTraceX(f) + traceW/2, height - panelMargin-panelPadding/2-traceW);
+  }
   if (debug) {
     stroke(200, 100, 200);
     rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
@@ -75,40 +87,50 @@ void draw() {
     stroke(0);
   }
 
+
+
+  //Stars (cut)
+  strokeWeight(debug ? 1: strokeCut);
   for (int f=0; f<starNum; f++) {
-
     float holeDiam = random(6, ledDiam-1);
-
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel, 
       ledDiam, ledDiam);
-
     ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel, 
       holeDiam, holeDiam);
-
-    fill(0);
-    textAlign(CENTER);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel+ ledDiam*1.75);
-    if (debug) {
-      textAlign(LEFT);
-      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel + 5);
-    }
-    noFill();
   }
 
+
+
+  //Star numbers (raster)
+  fill(0);
+  for (int f=0; f<starNum; f++) {
+    textAlign(CENTER);
+    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+deltaPanel+ ledDiam*1.75);
+    textAlign(LEFT);
+    if (debug) {
+      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1]+deltaPanel + 5);
+    }
+  }
+  noFill();
+
+
+
+  //Lines (raster)
   strokeWeight(strokeRaster);
   for (int f=0; f<lines.length; f++) {
-
     int fromStar = lines[f][0];
     int toStar = lines[f][1];
     float startX = starfield[fromStar][0];
     float startY = starfield[fromStar][1];
     float endX = starfield[toStar][0];
     float endY = starfield[toStar][1];
-
     line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY+deltaPanel, 
       endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY +deltaPanel);
   }
 
+
+
+  //Text (raster)
   textSize(24);
   text("Constellation name", (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
   textSize(14); 
