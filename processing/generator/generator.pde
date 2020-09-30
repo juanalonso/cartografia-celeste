@@ -239,6 +239,19 @@ void  placeLines() {
       }
     }
   }
+
+
+  //If a star has more than 4 connections we prune them to four
+  for (int f=0; f<starNum; f++) {
+    while (graph[f].size()>4) {
+      int v1 = (int)random(graph[f].size());
+      int star1 = (int) graph[f].get(v1);
+      println("Deleting line between", f, "and", star1);
+      graph[f].remove((Integer)star1);        
+      graph[star1].remove((Integer)f);
+    }
+  }
+
   int totalLines = 0;
   for (int f=0; f<starNum; f++) {
     for (int g=f; g>=0; g--) {
@@ -248,6 +261,8 @@ void  placeLines() {
   }
   println("-----------");
   lines = new int[totalLines][2];
+
+
 
   int count = 0;
   for (int f=0; f<starNum; f++) {
