@@ -4,7 +4,7 @@ import java.util.*;
 
 
 boolean debug = true;
-boolean record = true;
+boolean record = false;
 boolean twoPanels = true;
 
 
@@ -23,7 +23,7 @@ float strokeCut = 0.01;
 
 //Star-related values
 int starNum = 12;
-int ledDiam = 13;
+int ledDiam = 14;
 int starMargin = 50;
 int unconnectedStars;
 float[][] starfield = new float[starNum][2];
@@ -45,7 +45,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(12);
+  randomSeed(13);
 
   names = loadStrings("data/latin_nouns.txt");
 
@@ -61,7 +61,7 @@ void draw() {
   background(255);
 
   if (record) {
-    beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+".svg");
+    beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+ "_" + starData[0].toLowerCase() + ".svg");
   }
 
 
@@ -72,23 +72,29 @@ void draw() {
   for (int f=0; f<(twoPanels?2:3); f++) {
     rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
   }
+  rect(panelMargin+panelPadding*2, panelMargin+panelPadding*11, 
+  panelW-panelPadding*4, (panelW-panelPadding*4)/1.618, 
+  10, 10, 10, 10);
 
 
 
   //Trace guides (raster)
   strokeWeight(strokeRaster);
+  fill(0);
   for (int f=0; f<4; f++) {
-    line (getTraceX(f) + traceW/2, panelMargin+panelPadding/2, 
-      getTraceX(f) + traceW/2, panelMargin+panelPadding/2 + traceW);
-    line (getTraceX(f) + traceW/2, height - panelMargin-panelPadding/2, 
-      getTraceX(f) + traceW/2, height - panelMargin-panelPadding/2-traceW);
+    text(char(65+f), getTraceX(f) + 7, panelMargin+panelPadding/2);
+    line (getTraceX(f) + traceW/2, panelMargin+panelPadding/1.5, 
+      getTraceX(f) + traceW/2, panelMargin+panelPadding/2 + traceW*2);
+    line (getTraceX(f) + traceW/2, panelMargin+panelPadding*9, 
+      getTraceX(f) + traceW/2, panelMargin+panelPadding*9+traceW*2);
   }
   if (debug) {
     stroke(200, 100, 200, 50);
+    noFill();
     //rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
     for (int f=0; f<4; f++) {
-      rect (getTraceX(f), panelMargin+panelPadding/2, 
-        traceW, panelH-panelMargin*2-panelPadding/2);
+      rect (getTraceX(f), panelMargin+panelPadding, 
+        traceW, panelH-panelMargin*2-panelPadding);
     }
     stroke(0);
   }
@@ -99,6 +105,7 @@ void draw() {
   if (debug) {
     strokeWeight(1);
     stroke(200, 200, 100);
+    noFill();
     for (int f=0; f<=4; f++) {
       float y = getBlockY(f);
       line(getTraceX(0)+traceW/2, y, getTraceX(3)+traceW/2, y);
@@ -110,8 +117,9 @@ void draw() {
 
   //Stars (cut)
   strokeWeight(debug ? 1: strokeCut);
+  noFill();
   for (int f=0; f<starNum; f++) {
-    float holeDiam = random(6, ledDiam-1);
+    float holeDiam = random(6, ledDiam-2);
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1], 
       ledDiam, ledDiam);
     ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1], 
@@ -120,14 +128,48 @@ void draw() {
 
 
 
-  //Star numbers (raster)
+  //Star info (raster)
   fill(0);
+  textSize(14);
   for (int f=0; f<starNum; f++) {
+    String connectInfo = "";
+
+    switch(f) {
+    case 0:
+    case 1: 
+      connectInfo = "AD"; 
+      break;
+    case 2:
+    case 3: 
+      connectInfo = "AC"; 
+      break;      
+    case 4:
+    case 5: 
+      connectInfo = "CD"; 
+      break;
+    case 6:
+    case 7: 
+      connectInfo = "AB"; 
+      break;
+    case 8:
+    case 9: 
+      connectInfo = "BD"; 
+      break;
+    default:
+      connectInfo = "BC";
+    }    
+
+    if (f%2==0) {
+      connectInfo = "-" + connectInfo + "+";
+    } else {
+      connectInfo = "+" + connectInfo + "-";
+    }
+
     textAlign(CENTER);
-    text(f, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+ ledDiam*1.75);
+    text(connectInfo, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+ ledDiam*1.75);
     textAlign(LEFT);
     if (debug) {
-      text(f, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1] + 5);
+      text(f+1, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1] + 5);
     }
   }
   noFill();
@@ -150,14 +192,14 @@ void draw() {
 
 
   //Text (raster)
-  textSize(24);
+  textSize(32);
   text(starData[0], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
-  textSize(14); 
-  text(starData[1], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+32);
-  text(starData[2], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+54);
-  text(starData[3], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+76);
-  text(starData[4], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+98);
-  text(starData[5], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+2, panelW+panelPadding+120);
+  textSize(15); 
+  text(starData[1], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+40);
+  text(starData[2], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+64);
+  text(starData[3], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+88);
+  text(starData[4], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+112);
+  text(starData[5], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+136);
 
 
   noLoop();
@@ -169,9 +211,9 @@ void draw() {
 
 
 void placeStars() {
-  
-  float blockHeight = getBlockY(1) - getBlockY(0) ;
-  
+
+  //float blockHeight = getBlockY(1) - getBlockY(0) ;
+
   for (int f=0; f<starNum; f++) {
     boolean relocate = true;
     while (relocate) {
@@ -229,7 +271,10 @@ void placeStars() {
 void generateText() {
 
   //Name
-  starData[0] = names[(int)random(names.length)];
+  starData[0] = "";
+  while (starData[0].length()<=2 || starData[0].length()>=18 ) {
+    starData[0] = names[(int)random(names.length)];
+  }
   starData[0] = starData[0].substring(0, 1).toUpperCase() + starData[0].substring(1);
 
   //Coordinates
