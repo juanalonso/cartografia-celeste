@@ -3,7 +3,7 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = true;
+boolean debug = false;
 boolean record = false;
 boolean twoPanels = true;
 
@@ -24,7 +24,7 @@ float strokeCut = 0.01;
 //Star-related values
 int starNum = 12;
 int ledDiam = 16;
-int starMargin = 50;
+int starMargin = 45;
 int unconnectedStars;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
@@ -73,8 +73,8 @@ void draw() {
     rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
   }
   rect(panelMargin+panelPadding*2, panelMargin+panelPadding*11, 
-  panelW-panelPadding*4, (panelW-panelPadding*4)/1.618, 
-  10, 10, 10, 10);
+    panelW-panelPadding*4, (panelW-panelPadding*4)/1.618, 
+    10, 10, 10, 10);
 
 
 
@@ -141,11 +141,11 @@ void draw() {
       break;
     case 2:
     case 3: 
-      connectInfo = "AC"; 
+      connectInfo = "CD"; 
       break;      
     case 4:
     case 5: 
-      connectInfo = "CD"; 
+      connectInfo = "AC"; 
       break;
     case 6:
     case 7: 
@@ -212,26 +212,12 @@ void draw() {
 
 void placeStars() {
 
-  //float blockHeight = getBlockY(1) - getBlockY(0) ;
-
   for (int f=0; f<starNum; f++) {
     boolean relocate = true;
     while (relocate) {
       relocate = false;
 
-      //X coordinate. Do not place on copper trace.
-      starfield[f][0] = random(panelW-2*panelPadding);
-      float sx = starfield[f][0] + deltaPanel;
-      if (sx>=getTraceX(1)-ledDiam/2-1 && sx<=getTraceX(1)+traceW+ledDiam/2+1) {
-        relocate = true;
-        continue;
-      }
-      if (sx>=getTraceX(2)-ledDiam/2-1 && sx<=getTraceX(2)+traceW+ledDiam/2+1) {
-        relocate = true;
-        continue;
-      }
-
-      //Y coordinate. Asign to the corresponding block
+      //Block assignment
       int block = 0;
       switch(f) {
       case 0:
@@ -253,7 +239,36 @@ void placeStars() {
       default:
         block = 4;
       }
-      //starfield[f][1] = random(panelW-2*panelPadding);
+
+      //X coordinate. Do not place on copper trace.
+      starfield[f][0] = random(panelW-2*panelPadding);
+      if (block==2) {
+        if (f==2 || f==3) {
+          starfield[f][0] =random(getTraceX(0), getTraceX(1)-traceW)-traceW;
+        } else {
+          starfield[f][0] =random(getTraceX(1), getTraceX(3)-traceW)-traceW;
+        }
+      }
+      if (block==3) {
+        if (f==6 || f==7) {
+          starfield[f][0] =random(getTraceX(2), getTraceX(3)-traceW)-traceW;
+        } else {
+          starfield[f][0] =random(getTraceX(0), getTraceX(2)-traceW)-traceW;
+        }
+      }
+      if (block==4) {
+        starfield[f][0] =random(getTraceX(1), getTraceX(2)-traceW)-traceW;
+      }
+      float sx = starfield[f][0] + deltaPanel;
+      if (sx>=getTraceX(1)-ledDiam/2-1 && sx<=getTraceX(1)+traceW+ledDiam/2+1) {
+        relocate = true;
+        continue;
+      }
+      if (sx>=getTraceX(2)-ledDiam/2-1 && sx<=getTraceX(2)+traceW+ledDiam/2+1) {
+        relocate = true;
+        continue;
+      }
+
       starfield[f][1] = random(getBlockY(block-1)+ledDiam/2+1, getBlockY(block)-ledDiam/2-1);
       for (int g=0; g<f; g++) {
         if (starDist(starfield[f], starfield[g])<starMargin) {
