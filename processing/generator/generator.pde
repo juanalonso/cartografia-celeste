@@ -23,7 +23,7 @@ float strokeCut = 0.01;
 
 //Star-related values
 int starNum = 12;
-int ledDiam = 14;
+int ledDiam = 16;
 int starMargin = 50;
 int unconnectedStars;
 float[][] starfield = new float[starNum][2];
@@ -119,7 +119,7 @@ void draw() {
   strokeWeight(debug ? 1: strokeCut);
   noFill();
   for (int f=0; f<starNum; f++) {
-    float holeDiam = random(6, ledDiam-2);
+    float holeDiam = random(6, ledDiam-4);
     ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1], 
       ledDiam, ledDiam);
     ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1], 
