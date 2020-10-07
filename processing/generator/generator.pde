@@ -3,10 +3,9 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = false;
+boolean debug = true;
 boolean record = false;
-boolean twoPanels = true;
-
+PImage fondo;
 
 //Panel-related dimensions
 int panelW = 380;
@@ -24,7 +23,7 @@ float strokeCut = 0.01;
 //Star-related values
 int starNum = 12;
 int ledDiam = 16;
-int starMargin = 45;
+int starMargin = 32;
 int unconnectedStars;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
@@ -34,7 +33,7 @@ String[] starData = new String[6];
 
 
 //Electronics
-float traceW = 5*ledDiam/3;
+float traceW = 5*13/3; //5mm
 
 
 
@@ -44,6 +43,7 @@ void setup() {
   rectMode(CORNER);
   noFill();
   textSize(14); 
+  fondo = loadImage("ref.png");
 
   randomSeed(13);
 
@@ -59,6 +59,7 @@ void setup() {
 void draw() {
 
   background(255);
+  //image(fondo, 0, 0);
 
   if (record) {
     beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+ "_" + starData[0].toLowerCase() + ".svg");
@@ -66,15 +67,29 @@ void draw() {
 
 
 
+  //Set origin to panel top left corner
+  pushMatrix();
+  translate(panelMargin, panelMargin);
+
+
+
   //Panels (cut)
   strokeWeight(debug ? 1: strokeCut);
   noFill();  
-  for (int f=0; f<(twoPanels?2:3); f++) {
-    rect(panelMargin+f*(panelW+panelMargin*2), panelMargin, panelW, panelH, 10, 10, 10, 10);
-  }
-  rect(panelMargin+panelPadding*2, panelMargin+panelPadding*11, 
+  rect(panelPadding*2, panelPadding*11, 
     panelW-panelPadding*4, (panelW-panelPadding*4)/1.618, 
     10, 10, 10, 10);
+  for (int f=0; f<3; f++) {
+    rect(0, 0, panelW, panelH, 10, 10, 10, 10);
+    translate(panelW+panelMargin*2, 0);
+  }
+
+
+
+  //Set origin to starfield top left corner
+  popMatrix();
+  pushMatrix();
+  translate(deltaPanel, deltaPanel);
 
 
 
@@ -82,48 +97,28 @@ void draw() {
   strokeWeight(strokeRaster);
   fill(0);
   for (int f=0; f<4; f++) {
-    text(char(65+f), getTraceX(f) + 7, panelMargin+panelPadding/2);
-    line (getTraceX(f) + traceW/2, panelMargin+panelPadding/1.5, 
-      getTraceX(f) + traceW/2, panelMargin+panelPadding/2 + traceW*2);
-    line (getTraceX(f) + traceW/2, panelMargin+panelPadding*9, 
-      getTraceX(f) + traceW/2, panelMargin+panelPadding*9+traceW*2);
+    float x = getTraceX(f);
+    text(char(65+f), x-4, -panelPadding/2-1);
+    line (x, -panelPadding/2+6, x, -panelPadding/2+6+traceW*2);
+    line (x, panelPadding*8, x, panelPadding*8+traceW*2);
   }
   if (debug) {
     stroke(200, 100, 200, 50);
     noFill();
-    //rect(deltaPanel, deltaPanel, panelW-panelPadding*2, panelW-panelPadding*2);
+    rect(0, 0, panelW-panelPadding*2, panelW-panelPadding*2);
     for (int f=0; f<4; f++) {
-      rect (getTraceX(f), panelMargin+panelPadding, 
-        traceW, panelH-panelMargin*2-panelPadding);
+      rect (getTraceX(f)-traceW/2, 0, traceW, panelW-panelPadding);
     }
     stroke(0);
   }
 
 
 
-  //Blocks (debug)
-  if (debug) {
-    strokeWeight(1);
-    stroke(200, 200, 100);
-    noFill();
-    for (int f=0; f<=4; f++) {
-      float y = getBlockY(f);
-      line(getTraceX(0)+traceW/2, y, getTraceX(3)+traceW/2, y);
-    }
-    stroke(0);
-  }
-
-
-
-  //Stars (cut)
+  //Led holes (cut)
   strokeWeight(debug ? 1: strokeCut);
   noFill();
   for (int f=0; f<starNum; f++) {
-    float holeDiam = random(6, ledDiam-4);
-    ellipse(2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1], 
-      ledDiam, ledDiam);
-    ellipse(starfield[f][0] + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1], 
-      holeDiam, holeDiam);
+    ellipse(starfield[f][0], starfield[f][1], ledDiam, ledDiam);
   }
 
 
@@ -131,9 +126,10 @@ void draw() {
   //Star info (raster)
   fill(0);
   textSize(14);
+  textAlign(CENTER);
+
   for (int f=0; f<starNum; f++) {
     String connectInfo = "";
-
     switch(f) {
     case 0:
     case 1: 
@@ -141,11 +137,11 @@ void draw() {
       break;
     case 2:
     case 3: 
-      connectInfo = "CD"; 
+      connectInfo = "AC"; 
       break;      
     case 4:
     case 5: 
-      connectInfo = "AC"; 
+      connectInfo = "CD"; 
       break;
     case 6:
     case 7: 
@@ -165,15 +161,26 @@ void draw() {
       connectInfo = "+" + connectInfo + "-";
     }
 
-    textAlign(CENTER);
-    text(connectInfo, 2*panelMargin + panelW -starfield[f][0]-deltaPanel, starfield[f][1]+ ledDiam*1.75);
-    textAlign(LEFT);
-    if (debug) {
-      text(f+1, starfield[f][0] + ledDiam/2 + 4+ (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, starfield[f][1] + 5);
-    }
+    text(connectInfo, starfield[f][0], starfield[f][1]+ ledDiam*1.5);
+
   }
   noFill();
 
+
+
+  //Mirror coordinates
+  popMatrix();
+  pushMatrix();
+  translate(panelW*2-panelMargin, deltaPanel);
+  scale(-1, 1);
+
+
+
+  //Stars (cut)
+  for (int f=0; f<starNum; f++) {
+    float holeDiam = random(6, ledDiam-4);
+    ellipse(starfield[f][0], starfield[f][1], holeDiam, holeDiam);
+  }
 
 
   //Lines (raster)
@@ -185,22 +192,32 @@ void draw() {
     float startY = starfield[fromStar][1];
     float endX = starfield[toStar][0];
     float endY = starfield[toStar][1];
-    line( startX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, startY, 
-      endX + (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, endY);
+    line( startX, startY, endX, endY);
   }
 
 
 
+  //Set coordinates to text origin
+  popMatrix();
+  pushMatrix();
+  translate(deltaPanel+panelW+panelMargin*2, deltaPanel+panelW);
+
+
   //Text (raster)
   textSize(32);
-  text(starData[0], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel, panelW+panelPadding);
+  textAlign(LEFT);
+  text(starData[0],0, 0);
   textSize(15); 
-  text(starData[1], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+40);
-  text(starData[2], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+64);
-  text(starData[3], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+88);
-  text(starData[4], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+112);
-  text(starData[5], (twoPanels?1:2)*(panelW+panelMargin*2)+deltaPanel+1, panelW+panelPadding+136);
+  text(starData[1], 1, 40);
+  text(starData[2], 1, 64);
+  text(starData[3], 1, 88);
+  text(starData[4], 1, 112);
+  text(starData[5], 1, 136);
 
+
+
+  //Restore transforms
+  popMatrix();
 
   noLoop();
   if (record) {
@@ -212,68 +229,59 @@ void draw() {
 
 void placeStars() {
 
-  for (int f=0; f<starNum; f++) {
-    boolean relocate = true;
-    while (relocate) {
-      relocate = false;
+  boolean refresh = true;
 
-      //Block assignment
-      int block = 0;
-      switch(f) {
+  while (refresh) {
+
+    refresh = false;
+
+    for (int f=0; f<starNum; f++) {
+
+      //Y coordinate
+      starfield[f][1] =ledDiam/2+random(panelW-2*panelPadding-ledDiam);
+
+      //X coordinate
+      int traceX = f/2;
+      switch(traceX) {
       case 0:
-      case 1: 
-        block = 1; 
+        starfield[f][0] = random(getTraceX(0), getTraceX(3));
         break;
+      case 1:
+        starfield[f][0] = random(getTraceX(0), getTraceX(2));
+        break;        
       case 2:
-      case 3: 
+        starfield[f][0] = random(getTraceX(2), getTraceX(3));
+        break;
+      case 3:
+        starfield[f][0] =random(getTraceX(0), getTraceX(1));
+        break;         
       case 4:
-      case 5: 
-        block = 2; 
-        break;
-      case 6:
-      case 7: 
-      case 8:
-      case 9: 
-        block = 3; 
-        break;
+        starfield[f][0] =random(getTraceX(1), getTraceX(3));
+        break;         
       default:
-        block = 4;
+        starfield[f][0] =random(getTraceX(1), getTraceX(2));
       }
 
-      //X coordinate. Do not place on copper trace.
-      starfield[f][0] = random(panelW-2*panelPadding);
-      if (block==2) {
-        if (f==2 || f==3) {
-          starfield[f][0] =random(getTraceX(0), getTraceX(1)-traceW)-traceW;
-        } else {
-          starfield[f][0] =random(getTraceX(1), getTraceX(3)-traceW)-traceW;
-        }
+      //Quick and dirty: if a star is on the copper trace, its position is regenerated.
+      float sx = starfield[f][0];
+      if (sx-ledDiam/2<=0 ||
+        sx+ledDiam/2>=panelW-2*panelPadding||
+        sx>=getTraceX(1)-traceW/2-ledDiam/2 && sx<=getTraceX(1)+traceW/2+ledDiam/2||
+        sx>=getTraceX(2)-traceW/2-ledDiam/2 && sx<=getTraceX(2)+traceW/2+ledDiam/2) {
+        f=f-1;
       }
-      if (block==3) {
-        if (f==6 || f==7) {
-          starfield[f][0] =random(getTraceX(2), getTraceX(3)-traceW)-traceW;
-        } else {
-          starfield[f][0] =random(getTraceX(0), getTraceX(2)-traceW)-traceW;
-        }
-      }
-      if (block==4) {
-        starfield[f][0] =random(getTraceX(1), getTraceX(2)-traceW)-traceW;
-      }
-      float sx = starfield[f][0] + deltaPanel;
-      if (sx>=getTraceX(1)-ledDiam/2-1 && sx<=getTraceX(1)+traceW+ledDiam/2+1) {
-        relocate = true;
-        continue;
-      }
-      if (sx>=getTraceX(2)-ledDiam/2-1 && sx<=getTraceX(2)+traceW+ledDiam/2+1) {
-        relocate = true;
-        continue;
-      }
+    }
 
-      starfield[f][1] = random(getBlockY(block-1)+ledDiam/2+1, getBlockY(block)-ledDiam/2-1);
+    for (int f=0; f<starNum; f++) {
+      //Remove if too close or if on the same "line"
       for (int g=0; g<f; g++) {
         if (starDist(starfield[f], starfield[g])<starMargin) {
-          relocate = true;
-          continue;
+          refresh = true;
+          break;
+        }
+        if (abs(starfield[f][1]-starfield[g][1])<ledDiam*0.75) {
+          refresh = true;
+          break;
         }
       }
     }
@@ -441,9 +449,15 @@ float starDist(float[] s1, float[] s2) {
 
 
 float getTraceX(int index) {
-  return map(index, 0, 3, panelMargin+panelPadding/2, panelW+panelMargin-panelPadding/2) - traceW/2;
+  float x = map(index, 0, 3, 0, panelW-panelPadding*2);
+  if (index==0) {
+    x -= traceW;
+  } else if (index==3) {
+    x += traceW;
+  }
+  return x;
 }
 
 float getBlockY(int index) {
-  return map(index, 0, 4, deltaPanel, panelW+panelMargin-panelPadding);
+  return map(index, 0, 4, 0, panelW-panelPadding*2);
 }
