@@ -27,7 +27,8 @@ int unconnectedStars;
 float[][] starfield = new float[starNum][2];
 int[][] lines;
 boolean[] remove;
-String[] names;
+String[] starNames;
+String[] surnames;
 String[] starData = new String[6];
 
 
@@ -43,9 +44,10 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(13);
+  randomSeed(17);
 
-  names = loadStrings("data/latin_nouns.txt");
+  starNames = loadStrings("data/latin_nouns.txt");
+  surnames = loadStrings("data/surnames.txt");
 
   placeStars();
   placeLines();
@@ -93,6 +95,8 @@ void draw() {
   //Trace guides (raster)
   strokeWeight(strokeRaster);
   fill(0);
+  textAlign(LEFT);
+
   for (int f=0; f<4; f++) {
     float x = getTraceX(f);
     text(char(65+f), x-4, -panelPadding/2-1);
@@ -159,7 +163,6 @@ void draw() {
     }
 
     text(connectInfo, starfield[f][0], starfield[f][1]+ ledDiam*1.5);
-
   }
   noFill();
 
@@ -203,7 +206,7 @@ void draw() {
   //Text (raster)
   textSize(32);
   textAlign(LEFT);
-  text(starData[0],0, 0);
+  text(starData[0], 0, 0);
   textSize(15); 
   text(starData[1], 1, 40);
   text(starData[2], 1, 64);
@@ -215,6 +218,36 @@ void draw() {
 
   //Restore transforms
   popMatrix();
+
+
+  //Lot of magic numbers, not proud of it.
+  pushMatrix();
+  translate(panelPadding*3.25, deltaPanel+panelPadding*10.4);
+  scale(-0.357, 0.357);
+  rotate(PI/2);
+  //Lines (raster)
+  ellipse(150, -65, 35, 35);
+  strokeWeight(strokeRaster*2);
+  for (int f=0; f<lines.length; f++) {
+    int fromStar = lines[f][0]; 
+    int toStar = lines[f][1];
+    float startX = starfield[fromStar][0];
+    float startY = starfield[fromStar][1];
+    float endX = starfield[toStar][0];
+    float endY = starfield[toStar][1];
+    line( startX, startY, endX, endY);
+  }
+  popMatrix();
+  pushMatrix();
+  translate(panelPadding*7, deltaPanel+panelPadding*11.7);
+  scale(0.357, 0.357);
+  rotate(-PI/2);
+  textSize(40);
+  textAlign(CENTER);
+  text(starData[0], 0, 0);
+  popMatrix();
+  textSize(14); 
+
 
   noLoop();
   if (record) {
@@ -293,7 +326,7 @@ void generateText() {
   //Name
   starData[0] = "";
   while (starData[0].length()<=2 || starData[0].length()>=18 ) {
-    starData[0] = names[(int)random(names.length)];
+    starData[0] = starNames[(int)random(starNames.length)];
   }
   starData[0] = starData[0].substring(0, 1).toUpperCase() + starData[0].substring(1);
 
@@ -311,7 +344,9 @@ void generateText() {
   String[] brightnessLevels = {"α", "α", "α", "β", "β", "γ", "δ", "ε"};
   starData[4] = "Brightest star: "+brightnessLevels[(int)random(brightnessLevels.length)]+" " + starData[0].substring(0, 3) +" "+ nf(random(-0.5, 6.5), 1, 2)+"m";
 
-  starData[5] = "Catalogued in "+(int)random(1600, 1825)+" by "+char((int)random(65, 91))+". Xxxxxxxxx";
+  String surname = surnames[(int)random(surnames.length)];
+  surname = surname.substring(0, 1).toUpperCase() + surname.substring(1);
+  starData[5] = "Catalogued in "+(int)random(1600, 1825)+" by "+char((int)random(65, 91))+". " + surname;
 }
 
 
