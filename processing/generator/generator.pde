@@ -3,7 +3,7 @@ import megamu.mesh.*;
 import java.util.*;
 
 
-boolean debug = true;
+boolean debug = false;
 boolean record = false;
 
 //Panel-related dimensions
@@ -226,6 +226,7 @@ void draw() {
   scale(-0.357, 0.357);
   rotate(PI/2);
   //Lines (raster)
+  strokeWeight(strokeCut);
   ellipse(150, -65, 35, 35);
   strokeWeight(strokeRaster*2);
   for (int f=0; f<lines.length; f++) {
