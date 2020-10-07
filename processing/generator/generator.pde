@@ -5,7 +5,6 @@ import java.util.*;
 
 boolean debug = true;
 boolean record = false;
-PImage fondo;
 
 //Panel-related dimensions
 int panelW = 380;
@@ -43,7 +42,6 @@ void setup() {
   rectMode(CORNER);
   noFill();
   textSize(14); 
-  fondo = loadImage("ref.png");
 
   randomSeed(13);
 
@@ -59,7 +57,6 @@ void setup() {
 void draw() {
 
   background(255);
-  //image(fondo, 0, 0);
 
   if (record) {
     beginRecord(SVG, "constellation_"+nf((int)random(10000), 4)+ "_" + starData[0].toLowerCase() + ".svg");
