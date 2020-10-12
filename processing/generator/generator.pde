@@ -4,7 +4,7 @@ import java.util.*;
 
 
 boolean debug = false;
-boolean record = false;
+boolean record = true;
 
 //Panel-related dimensions
 int panelW = 380;
@@ -44,7 +44,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(17);
+  randomSeed(18);
 
   starNames = loadStrings("data/latin_nouns.txt");
   surnames = loadStrings("data/surnames.txt");
@@ -333,7 +333,7 @@ void generateText() {
 
   //Coordinates
   starData[1] = nf((int)random(24), 2) + "h "+nf((int)random(60), 2) +"m "+nf((int)random(60), 2) +"s," +
-    " "+nfp((int)random(24)-12, 2)+"º "+nf((int)random(60), 2) +"' "+nf((int)random(60), 2) +"\"";
+    " "+nfp((int)random(180)-90, 2)+"º "+nf((int)random(60), 2) +"' "+nf((int)random(60), 2) +"\"";
 
   //Distance
   starData[2] = "Distance: "+nf(random(1.3, 100), 1, 2)+"pc";
