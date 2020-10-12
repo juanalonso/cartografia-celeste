@@ -5,6 +5,7 @@ import java.util.*;
 
 boolean debug = false;
 boolean record = true;
+boolean keyring = false;
 
 //Panel-related dimensions
 int panelW = 380;
@@ -78,11 +79,15 @@ void draw() {
   rect(panelPadding*2, panelPadding*11, 
     panelW-panelPadding*4, (panelW-panelPadding*4)/1.618, 
     10, 10, 10, 10);
-  for (int f=0; f<3; f++) {
+  for (int f=0; f<2; f++) {
     rect(0, 0, panelW, panelH, 10, 10, 10, 10);
     translate(panelW+panelMargin*2, 0);
   }
-
+  rect(0, 0, traceW*2, panelH, 10, 10, 10, 10);
+  line(traceW, 0, traceW, panelH);
+  translate(traceW*2+panelMargin*2, 0);
+  rect(0, 0, traceW*2, panelW-traceW*2);
+  line(traceW, 0, traceW, panelW-traceW*2);
 
 
   //Set origin to starfield top left corner
@@ -99,8 +104,8 @@ void draw() {
 
   for (int f=0; f<4; f++) {
     float x = getTraceX(f);
-    text(char(65+f), x-4, -panelPadding/2-1);
-    line (x, -panelPadding/2+6, x, -panelPadding/2+6+traceW*2);
+    text(char(65+f), x-4, -panelPadding/8-1);
+    line (x, 6, x, -panelPadding/2+6+traceW*3);
     line (x, panelPadding*8, x, panelPadding*8+traceW*2);
   }
   if (debug) {
@@ -220,34 +225,36 @@ void draw() {
   popMatrix();
 
 
-  //Lot of magic numbers, not proud of it.
-  pushMatrix();
-  translate(panelPadding*3.25, deltaPanel+panelPadding*10.4);
-  scale(-0.357, 0.357);
-  rotate(PI/2);
-  //Lines (raster)
-  strokeWeight(strokeCut);
-  ellipse(150, -65, 35, 35);
-  strokeWeight(strokeRaster*2);
-  for (int f=0; f<lines.length; f++) {
-    int fromStar = lines[f][0]; 
-    int toStar = lines[f][1];
-    float startX = starfield[fromStar][0];
-    float startY = starfield[fromStar][1];
-    float endX = starfield[toStar][0];
-    float endY = starfield[toStar][1];
-    line( startX, startY, endX, endY);
+  if (keyring) {
+    //Lot of magic numbers, not proud of it.
+    pushMatrix();
+    translate(panelPadding*3.25, deltaPanel+panelPadding*10.4);
+    scale(-0.357, 0.357);
+    rotate(PI/2);
+    //Lines (raster)
+    strokeWeight(strokeCut);
+    ellipse(150, -65, 35, 35);
+    strokeWeight(strokeRaster*2);
+    for (int f=0; f<lines.length; f++) {
+      int fromStar = lines[f][0]; 
+      int toStar = lines[f][1];
+      float startX = starfield[fromStar][0];
+      float startY = starfield[fromStar][1];
+      float endX = starfield[toStar][0];
+      float endY = starfield[toStar][1];
+      line( startX, startY, endX, endY);
+    }
+    popMatrix();
+    pushMatrix();
+    translate(panelPadding*7, deltaPanel+panelPadding*11.7);
+    scale(0.357, 0.357);
+    rotate(-PI/2);
+    textSize(40);
+    textAlign(CENTER);
+    text(starData[0], 0, 0);
+    popMatrix();
+    textSize(14);
   }
-  popMatrix();
-  pushMatrix();
-  translate(panelPadding*7, deltaPanel+panelPadding*11.7);
-  scale(0.357, 0.357);
-  rotate(-PI/2);
-  textSize(40);
-  textAlign(CENTER);
-  text(starData[0], 0, 0);
-  popMatrix();
-  textSize(14); 
 
 
   noLoop();
@@ -275,19 +282,19 @@ void placeStars() {
       int traceX = f/2;
       switch(traceX) {
       case 0:
-        starfield[f][0] = random(getTraceX(0), getTraceX(3));
+        starfield[f][0] = random(getTraceX(0)+ledDiam/2+traceW/2, getTraceX(3)-traceW/2-ledDiam/2);
         break;
       case 1:
-        starfield[f][0] = random(getTraceX(0), getTraceX(2));
+        starfield[f][0] = random(getTraceX(0)+ledDiam/2+traceW/2, getTraceX(2));
         break;        
       case 2:
-        starfield[f][0] = random(getTraceX(2), getTraceX(3));
+        starfield[f][0] = random(getTraceX(2), getTraceX(3)-traceW/2-ledDiam/2);
         break;
       case 3:
-        starfield[f][0] =random(getTraceX(0), getTraceX(1));
+        starfield[f][0] =random(getTraceX(0)+ledDiam/2+traceW/2, getTraceX(1));
         break;         
       case 4:
-        starfield[f][0] =random(getTraceX(1), getTraceX(3));
+        starfield[f][0] =random(getTraceX(1), getTraceX(3)-traceW/2-ledDiam/2);
         break;         
       default:
         starfield[f][0] =random(getTraceX(1), getTraceX(2));
@@ -484,9 +491,9 @@ float starDist(float[] s1, float[] s2) {
 float getTraceX(int index) {
   float x = map(index, 0, 3, 0, panelW-panelPadding*2);
   if (index==0) {
-    x -= traceW;
+    //x -= traceW;
   } else if (index==3) {
-    x += traceW;
+    //x += traceW;
   }
   return x;
 }
