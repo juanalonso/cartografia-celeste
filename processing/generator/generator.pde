@@ -83,11 +83,13 @@ void draw() {
     rect(0, 0, panelW, panelH, 10, 10, 10, 10);
     translate(panelW+panelMargin*2, 0);
   }
+  
+  //Ring layer
   rect(0, 0, traceW*2, panelH, 10, 10, 10, 10);
   line(traceW, 0, traceW, panelH);
   translate(traceW*2+panelMargin*2, 0);
-  rect(0, 0, traceW*2, panelW-traceW*2);
-  line(traceW, 0, traceW, panelW-traceW*2);
+  rect(0, 0, traceW*2, panelW-traceW*2+1);
+  line(traceW, 0, traceW, panelW-traceW*2+1);
 
 
   //Set origin to starfield top left corner
