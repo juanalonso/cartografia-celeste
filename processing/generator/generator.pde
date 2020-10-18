@@ -45,7 +45,7 @@ void setup() {
   noFill();
   textSize(14); 
 
-  randomSeed(18);
+  randomSeed(20);
 
   starNames = loadStrings("data/latin_nouns.txt");
   surnames = loadStrings("data/surnames.txt");
@@ -88,8 +88,8 @@ void draw() {
   rect(0, 0, traceW*2, panelH, 10, 10, 10, 10);
   line(traceW, 0, traceW, panelH);
   translate(traceW*2+panelMargin*2, 0);
-  rect(0, 0, traceW*2, panelW-traceW*2+1);
-  line(traceW, 0, traceW, panelW-traceW*2+1);
+  rect(0, 0, traceW*3, panelW-traceW*2+1);
+  line(traceW*1.5+8, 0, traceW*1.5+8, panelW-traceW*2+1);
 
 
   //Set origin to starfield top left corner
@@ -164,9 +164,9 @@ void draw() {
     }    
 
     if (f%2==0) {
-      connectInfo = "-" + connectInfo + "+";
+      connectInfo = "–" + connectInfo + "+";  
     } else {
-      connectInfo = "+" + connectInfo + "-";
+      connectInfo = "+" + connectInfo + "–";
     }
 
     text(connectInfo, starfield[f][0], starfield[f][1]+ ledDiam*1.5);
@@ -255,9 +255,8 @@ void draw() {
     textAlign(CENTER);
     text(starData[0], 0, 0);
     popMatrix();
-    textSize(14);
   }
-
+  textSize(14); 
 
   noLoop();
   if (record) {
